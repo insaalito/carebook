@@ -1,0 +1,73 @@
+{
+  "name": "ClientNote",
+  "type": "object",
+  "properties": {
+    "salon_id": {
+      "type": "string"
+    },
+    "salon_owner_email": {
+      "type": "string",
+      "description": "Denormalized salon owner email for RLS isolation"
+    },
+    "customer_email": {
+      "type": "string",
+      "description": "Client's email \u2014 used to group all notes per client"
+    },
+    "appointment_id": {
+      "type": "string",
+      "description": "Optional link to a specific appointment"
+    },
+    "note_text": {
+      "type": "string"
+    },
+    "author_name": {
+      "type": "string"
+    },
+    "author_email": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "salon_id",
+    "customer_email",
+    "note_text",
+    "author_name",
+    "author_email"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "$or": [
+        {
+          "data.customer_email": "{{user.email}}"
+        },
+        {
+          "data.author_email": "{{user.email}}"
+        },
+        {
+          "data.salon_owner_email": "{{user.email}}"
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.author_email": "{{user.email}}"
+        },
+        {
+          "data.salon_owner_email": "{{user.email}}"
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.author_email": "{{user.email}}"
+        },
+        {
+          "data.salon_owner_email": "{{user.email}}"
+        }
+      ]
+    }
+  }
+}

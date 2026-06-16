@@ -1,0 +1,60 @@
+{
+  "name": "BusinessSettings",
+  "type": "object",
+  "properties": {
+    "salon_id": {
+      "type": "string",
+      "description": "Reference to Salon"
+    },
+    "stripe_rate_percentage": {
+      "type": "number",
+      "default": 2.9,
+      "description": "Stripe processing fee %"
+    },
+    "stripe_fixed_fee": {
+      "type": "number",
+      "default": 0.3,
+      "description": "Stripe fixed fee per transaction"
+    },
+    "external_terminal_rate_percentage": {
+      "type": "number",
+      "default": 0,
+      "description": "External card terminal fee %"
+    },
+    "ath_movil_rate_percentage": {
+      "type": "number",
+      "default": 2.25,
+      "description": "ATH M\u00f3vil fee %"
+    },
+    "allow_staff_view_team_calendar": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, staff can see co-workers calendars"
+    }
+  },
+  "required": [
+    "salon_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

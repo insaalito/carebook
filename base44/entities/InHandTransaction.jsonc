@@ -1,0 +1,111 @@
+{
+  "name": "InHandTransaction",
+  "type": "object",
+  "properties": {
+    "salon_id": {
+      "type": "string"
+    },
+    "salon_owner_email": {
+      "type": "string"
+    },
+    "staff_id": {
+      "type": "string"
+    },
+    "staff_name": {
+      "type": "string"
+    },
+    "staff_email": {
+      "type": "string"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "service_name": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "Cash",
+        "ATH_Movil",
+        "External_Card"
+      ],
+      "default": "Cash"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "salon_id",
+    "staff_id",
+    "customer_name",
+    "amount",
+    "payment_method",
+    "date"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.staff_email": "{{user.email}}"
+        },
+        {
+          "data.salon_owner_email": "{{user.email}}"
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.staff_email": "{{user.email}}"
+        },
+        {
+          "data.salon_owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.staff_email": "{{user.email}}"
+        },
+        {
+          "data.salon_owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.staff_email": "{{user.email}}"
+        },
+        {
+          "data.salon_owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

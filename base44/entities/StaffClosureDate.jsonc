@@ -1,0 +1,41 @@
+{
+  "name": "StaffClosureDate",
+  "type": "object",
+  "properties": {
+    "staff_id": {
+      "type": "string",
+      "description": "Reference to Staff member"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "The closed date e.g. 2026-07-04"
+    },
+    "label": {
+      "type": "string",
+      "description": "e.g. Sick Day, Vacation"
+    }
+  },
+  "required": [
+    "staff_id",
+    "date"
+  ],
+  "rls": {
+    "read": true,
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

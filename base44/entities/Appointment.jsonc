@@ -1,0 +1,192 @@
+{
+  "name": "Appointment",
+  "type": "object",
+  "properties": {
+    "salon_id": {
+      "type": "string"
+    },
+    "salon_owner_email": {
+      "type": "string",
+      "description": "Denormalized salon owner email for RLS isolation \u2014 injected at creation time"
+    },
+    "staff_id": {
+      "type": "string"
+    },
+    "assigned_staff_email": {
+      "type": "string",
+      "description": "Email of the user account assigned to this appointment (the staff member)."
+    },
+    "service_id": {
+      "type": "string"
+    },
+    "customer_email": {
+      "type": "string"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "customer_phone": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "time_slot": {
+      "type": "string",
+      "description": "e.g. 10:00"
+    },
+    "duration_minutes": {
+      "type": "number"
+    },
+    "service_name": {
+      "type": "string"
+    },
+    "staff_name": {
+      "type": "string"
+    },
+    "salon_name": {
+      "type": "string"
+    },
+    "price": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "confirmed",
+        "completed",
+        "no_show",
+        "cancelled"
+      ],
+      "default": "confirmed"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "payment_type": {
+      "type": "string",
+      "enum": [
+        "Booking",
+        "Walk_In"
+      ],
+      "default": "Booking"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "Stripe_App",
+        "Cash",
+        "ATH_Movil",
+        "External_Card"
+      ],
+      "description": "How the appointment was paid"
+    },
+    "stripe_payment_intent_id": {
+      "type": "string",
+      "description": "Stripe PaymentIntent ID \u2014 used for issuing refunds on cancellation"
+    },
+    "ath_movil_reference": {
+      "type": "string",
+      "description": "ATH M\u00f3vil reference/confirmation number"
+    },
+    "gross_amount": {
+      "type": "number",
+      "description": "Full price before fees"
+    },
+    "processor_fee_deducted": {
+      "type": "number",
+      "description": "Fee amount deducted"
+    },
+    "net_amount_to_split": {
+      "type": "number",
+      "description": "gross minus fee"
+    },
+    "staff_payout_amount": {
+      "type": "number",
+      "description": "Staff commission payout"
+    },
+    "house_net_amount": {
+      "type": "number",
+      "description": "Owner net after staff commission"
+    },
+    "client_rescheduled": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if the client has already used their one allowed self-reschedule"
+    },
+    "refund_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "refunded",
+        "failed"
+      ],
+      "default": "none",
+      "description": "Tracks whether a Stripe refund was issued for this appointment"
+    }
+  },
+  "required": [
+    "salon_id",
+    "staff_id",
+    "service_id",
+    "customer_email",
+    "customer_name",
+    "date",
+    "time_slot"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "$or": [
+        {
+          "data.customer_email": "{{user.email}}"
+        },
+        {
+          "data.assigned_staff_email": "{{user.email}}"
+        },
+        {
+          "data.salon_owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.customer_email": "{{user.email}}"
+        },
+        {
+          "data.assigned_staff_email": "{{user.email}}"
+        },
+        {
+          "data.salon_owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.customer_email": "{{user.email}}"
+        },
+        {
+          "data.salon_owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "name": "Staff",
+  "type": "object",
+  "properties": {
+    "salon_id": {
+      "type": "string",
+      "description": "Reference to Salon"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Staff member's contact phone number"
+    },
+    "role_title": {
+      "type": "string",
+      "default": "Barber"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "avatar_url": {
+      "type": "string"
+    },
+    "specialties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "working_days": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "start_time": {
+      "type": "string",
+      "default": "09:00"
+    },
+    "end_time": {
+      "type": "string",
+      "default": "18:00"
+    },
+    "chair_designation": {
+      "type": "string",
+      "description": "e.g. Chair 1, Station A"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": false,
+      "description": "Controlled by owner. Must be true for staff to appear publicly or access their dashboard."
+    },
+    "is_owner_linked": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this staff record is tied to an invited user account"
+    }
+  },
+  "required": [
+    "salon_id",
+    "name"
+  ],
+  "rls": {
+    "read": true,
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.user_email": "{{user.email}}"
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

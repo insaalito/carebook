@@ -1,0 +1,51 @@
+{
+  "name": "Service",
+  "type": "object",
+  "properties": {
+    "salon_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "default": 30
+    },
+    "price": {
+      "type": "number"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "haircut",
+        "beard",
+        "color",
+        "treatment",
+        "shave",
+        "styling",
+        "other"
+      ],
+      "default": "haircut"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "staff_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of staff member IDs who can perform this service"
+    }
+  },
+  "required": [
+    "salon_id",
+    "name",
+    "price"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "name": "StaffInvite",
+  "type": "object",
+  "properties": {
+    "salon_id": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "token": {
+      "type": "string",
+      "description": "Secure registration token"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "salon_id",
+    "email",
+    "token"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

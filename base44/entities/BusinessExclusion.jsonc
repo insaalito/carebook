@@ -1,0 +1,63 @@
+{
+  "name": "BusinessExclusion",
+  "type": "object",
+  "properties": {
+    "salon_id": {
+      "type": "string",
+      "description": "Reference to Salon"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "recurring",
+        "one_time"
+      ],
+      "description": "Whether this block repeats weekly or applies once"
+    },
+    "day_of_week": {
+      "type": "string",
+      "description": "Used when type=recurring. e.g. Monday, Tuesday..."
+    },
+    "specific_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Used when type=one_time. e.g. 2026-05-22"
+    },
+    "start_time": {
+      "type": "string",
+      "description": "24h format HH:MM"
+    },
+    "end_time": {
+      "type": "string",
+      "description": "24h format HH:MM"
+    },
+    "label": {
+      "type": "string",
+      "description": "Optional label e.g. Lunch Break"
+    }
+  },
+  "required": [
+    "salon_id",
+    "type",
+    "start_time",
+    "end_time"
+  ],
+  "rls": {
+    "read": true,
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,163 @@
+{
+  "name": "Salon",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Salon or barbershop name"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Email of the owner user"
+    },
+    "description": {
+      "type": "string",
+      "description": "About the salon"
+    },
+    "address": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Cover photo URL"
+    },
+    "google_maps_url": {
+      "type": "string",
+      "description": "Google Maps link for the salon location"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "barbershop",
+        "salon",
+        "beauty_studio",
+        "nail_salon",
+        "spa"
+      ],
+      "default": "barbershop"
+    },
+    "opening_time": {
+      "type": "string",
+      "default": "09:00"
+    },
+    "closing_time": {
+      "type": "string",
+      "default": "18:00"
+    },
+    "shift2_start": {
+      "type": "string",
+      "description": "Second shift start time HH:MM (optional, for split-shift)"
+    },
+    "shift2_end": {
+      "type": "string",
+      "description": "Second shift end time HH:MM (optional, for split-shift)"
+    },
+    "working_days": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "e.g. ['Monday','Tuesday',...]"
+    },
+    "slot_interval_minutes": {
+      "type": "number",
+      "enum": [
+        15,
+        30,
+        45,
+        60
+      ],
+      "default": 30,
+      "description": "Duration of each bookable time slot in minutes"
+    },
+    "buffer_minutes": {
+      "type": "number",
+      "enum": [
+        0,
+        5,
+        10,
+        15
+      ],
+      "default": 0,
+      "description": "Buffer time between appointments in minutes"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "stripe_connect_account_id": {
+      "type": "string",
+      "description": "Stripe Connect account ID for this salon owner"
+    },
+    "stripe_connect_access_token": {
+      "type": "string",
+      "description": "Stripe Connect access token for this salon owner"
+    }
+  },
+  "required": [
+    "name",
+    "owner_email"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.is_active": true
+        },
+        {
+          "data.owner_email": "{{user.email}}"
+        },
+        {
+          "id": "{{user.LinkedBusinessID}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ],
+      "default": "user",
+      "description": "admin = Business Owner, user = Staff/Customer"
+    },
+    "BusinessID": {
+      "type": "string",
+      "description": "Salon ID owned by this user. Set automatically when they create a salon."
+    },
+    "LinkedBusinessID": {
+      "type": "string",
+      "description": "Salon ID this staff member is linked to. Set when they accept a staff invite. Must be cleared before they can join another salon."
+    }
+  }
+}

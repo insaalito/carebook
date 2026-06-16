@@ -1,0 +1,44 @@
+{
+  "name": "ClientPreference",
+  "type": "object",
+  "properties": {
+    "customer_email": {
+      "type": "string",
+      "description": "Client's email \u2014 one record per client"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "global_client_notes": {
+      "type": "string",
+      "description": "Persistent notes: allergies, cut specs, product sensitivities"
+    }
+  },
+  "required": [
+    "customer_email"
+  ],
+  "rls": {
+    "create": {
+      "data.customer_email": "{{user.email}}"
+    },
+    "read": true,
+    "update": {
+      "data.customer_email": "{{user.email}}"
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.customer_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
