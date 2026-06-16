@@ -135,16 +135,27 @@ export default function Dashboard() {
 
   const periodAppts = filterByPeriod(staffFilteredAppts);
   
-  const digitalMethods = ['Stripe_App'];
-  const inHandMethods = ['Cash', 'ATH_Movil', 'External_Card'];
-  const filterApptsByEarnings = (appts) => {
-    if (earningsFilter === 'digital') return appts.filter(a => digitalMethods.includes(a.payment_method));
-    if (earningsFilter === 'inhand') return appts.filter(a => inHandMethods.includes(a.payment_method));
-    return appts;
-  };
-  
-  const statsAppts = filterApptsByEarnings(periodAppts);
-  const completedAppts = statsAppts.filter(a => a.status === 'completed');
+  // Earnings filter logic:
+  // - 'digital': Only Stripe appointments (online bookings)
+  // - 'inhand': Only InHandTransaction records (walk-ins paid via Cash/ATH/External)
+  // - 'all': Both Stripe appointments + InHandTransaction records
+  //
+  // Note: Appointments should only have Stripe_App payments (created via online booking).
+  // Walk-in transactions with Cash/ATH Móvil/External Card are stored separately in InHandTransaction.
+
+  const periodStripeAppts = periodAppts.filter(a => a.payment_method === 'Stripe_App');
+
+  const completedStripeAppts = periodStripeAppts.filter(a => a.status === 'completed');
+
+  // For stats cards (no-shows, cancellations, etc.) - only count relevant records based on filter
+  const statsAppts = earningsFilter === 'inhand' ? [] :
+                     earningsFilter === 'digital' ? periodStripeAppts :
+                     periodAppts; // 'all' includes all appointments
+
+  const completedAppts = earningsFilter === 'inhand' ? [] :
+                        earningsFilter === 'digital' ? completedStripeAppts :
+                        periodAppts.filter(a => a.status === 'completed');
+
   const todayAppts = appointments.filter(a => a.date === format(now, 'yyyy-MM-dd') && (staffFilter === 'all' || a.staff_id === staffFilter));
   const confirmedToday = todayAppts.filter(a => a.status === 'confirmed');
   const upcomingAppts = appointments
@@ -152,9 +163,7 @@ export default function Dashboard() {
     .sort((a, b) => a.date.localeCompare(b.date) || a.time_slot.localeCompare(b.time_slot))
     .slice(0, 10);
 
-  const earningsAppts = completedAppts;
-
-  // In-hand transactions filtered by period, staff, and earnings filter
+  // In-hand transactions filtered by period and staff
   const periodInHand = inHandTransactions.filter(t => {
     const start = period === 'today' ? startOfDay(now) :
                   period === 'week' ? startOfWeek(now) : startOfMonth(now);
@@ -162,9 +171,10 @@ export default function Dashboard() {
     const matchesStaff = staffFilter === 'all' || t.staff_id === staffFilter;
     return matchesPeriod && matchesStaff;
   });
-  const earningsInHand = earningsFilter === 'digital' ? [] :
-    earningsFilter === 'inhand' ? periodInHand :
-    periodInHand; // 'all' includes in-hand
+
+  // Earnings arrays based on filter selection
+  const earningsAppts = earningsFilter === 'inhand' ? [] : completedStripeAppts;
+  const earningsInHand = earningsFilter === 'digital' ? [] : periodInHand;
 
   const noShows = statsAppts.filter(a => a.status === 'no_show').length;
   const cancellations = statsAppts.filter(a => a.status === 'cancelled').length;
@@ -211,8 +221,17 @@ export default function Dashboard() {
     const d = new Date(now);
     d.setDate(d.getDate() - (6 - i));
     const key = format(d, 'yyyy-MM-dd');
-    const dayAppts = filterApptsByEarnings(staffFilteredAppts.filter(a => a.date === key && a.status === 'completed'));
-    return { day: format(d, 'EEE'), revenue: dayAppts.reduce((s, a) => s + (a.gross_amount || a.price || 0), 0) };
+    // Get completed appointments for this day
+    const dayAppts = earningsFilter === 'inhand' ? [] :
+                     earningsFilter === 'digital' ?
+                       staffFilteredAppts.filter(a => a.date === key && a.status === 'completed' && a.payment_method === 'Stripe_App') :
+                       staffFilteredAppts.filter(a => a.date === key && a.status === 'completed');
+    // Get in-hand transactions for this day (if applicable)
+    const dayInHand = earningsFilter === 'digital' ? [] :
+                      periodInHand.filter(t => t.date === key);
+    const apptRevenue = dayAppts.reduce((s, a) => s + (a.gross_amount || a.price || 0), 0);
+    const inHandRevenue = dayInHand.reduce((s, t) => s + (t.amount || 0), 0);
+    return { day: format(d, 'EEE'), revenue: apptRevenue + inHandRevenue };
   });
 
   const updateStatus = async (id, status) => {
@@ -418,9 +437,13 @@ export default function Dashboard() {
         {/* Mobile card list */}
         <div className="block md:hidden divide-y divide-border">
           {(() => {
+            // Filter appointments for recent list based on earningsFilter
+            const recentAppts = earningsFilter === 'inhand' ? [] :
+                              earningsFilter === 'digital' ? staffFilteredAppts.filter(a => a.payment_method === 'Stripe_App') :
+                              staffFilteredAppts;
             const merged = [
-              ...filterApptsByEarnings(staffFilteredAppts).map(a => ({ ...a, _type: 'appointment' })),
-              ...(earningsFilter === 'digital' ? [] : periodInHand).map(t => ({ ...t, _type: 'transaction' }))
+              ...recentAppts.map(a => ({ ...a, _type: 'appointment' })),
+              ...earningsInHand.map(t => ({ ...t, _type: 'transaction' }))
             ].sort((a, b) => {
               const dateA = new Date(a.date + (a._type === 'appointment' ? 'T' + a.time_slot : 'T23:59:59'));
               const dateB = new Date(b.date + (b._type === 'appointment' ? 'T' + b.time_slot : 'T23:59:59'));
@@ -457,9 +480,13 @@ export default function Dashboard() {
             </thead>
             <tbody>
               {(() => {
+                // Filter appointments for recent list based on earningsFilter
+                const recentAppts = earningsFilter === 'inhand' ? [] :
+                                  earningsFilter === 'digital' ? staffFilteredAppts.filter(a => a.payment_method === 'Stripe_App') :
+                                  staffFilteredAppts;
                 const merged = [
-                  ...filterApptsByEarnings(staffFilteredAppts).map(a => ({ ...a, _type: 'appointment' })),
-                  ...(earningsFilter === 'digital' ? [] : inHandTransactions).map(t => ({ ...t, _type: 'transaction' }))
+                  ...recentAppts.map(a => ({ ...a, _type: 'appointment' })),
+                  ...earningsInHand.map(t => ({ ...t, _type: 'transaction' }))
                 ].sort((a, b) => {
                   const dateA = new Date(a.date + (a._type === 'appointment' ? 'T' + a.time_slot : 'T23:59:59'));
                   const dateB = new Date(b.date + (b._type === 'appointment' ? 'T' + b.time_slot : 'T23:59:59'));
@@ -485,10 +512,17 @@ export default function Dashboard() {
               })()}
             </tbody>
           </table>
-          {staffFilteredAppts.length === 0 && inHandTransactions.length === 0 && (
+          {earningsFilter !== 'inhand' && staffFilteredAppts.length === 0 && earningsInHand.length === 0 && (
             <div className="py-12 text-center text-muted-foreground">
               <Users className="w-8 h-8 mx-auto mb-2 opacity-30" />
               <p className="text-sm">No activity yet</p>
+            </div>
+          )}
+          {earningsFilter === 'inhand' && earningsInHand.length === 0 && (
+            <div className="py-12 text-center text-muted-foreground">
+              <DollarSign className="w-8 h-8 mx-auto mb-2 opacity-30" />
+              <p className="text-sm">No in-hand transactions yet</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">Use the "In-Hand Entry" button to record walk-in payments</p>
             </div>
           )}
         </div>
